@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BaseButton } from "@/components/BaseButton";
 import { Text, View } from "../../components/Themed";
 import { useEventStore } from "@/state/events.store";
+import {Calendar, CalendarList, Agenda} from 'react-native-calendars';
 
 enum RepeatOptions {
     WEEKLY = "WEEKLY",
@@ -109,7 +110,15 @@ export function Test() {
    
   return (
     <View className="text-white text-[2rem]">
-    <Text>{JSON.stringify(event, null, 2)}</Text>
+
+
+<Calendar
+  onDayPress={day => {
+    console.log('selected day', day);
+  }}
+/>
+
+
 
 <View className="flex flex-row justify-between bg-red-500">
     <Text>Event Name</Text>
@@ -147,6 +156,7 @@ className="rounded-lg bg-black p-5 placeholder:text-red"
         placeholder="03:00 PM"
       />
 </View>
+
      
 
 <View>
@@ -163,7 +173,8 @@ className="rounded-lg bg-black p-5 placeholder:text-red"
     </Picker>
 </View>
 
-{/* <Text>{JSON.stringify(eventStore, null, 2)}</Text> */}
+    <Text>{JSON.stringify(event, null, 2)}</Text>
+
         
 <BaseButton 
  title="SAVE"
