@@ -1,18 +1,17 @@
-import { Pressable, Text } from "react-native";
+import { Pressable, Text } from 'react-native';
 
 interface BaseButtonProps {
-    onPress: () => void;
-    title: string;
-  }
+  onPress: () => void;
+  title: string;
+}
 
-
-export function BaseButton({onPress, title}: BaseButtonProps) {
+export function BaseButton({ onPress, title }: BaseButtonProps) {
   return (
     <Pressable
-            onPress={onPress}
-            className="bg-green-500 p-4 rounded-lg flex justify-center items-center"
-        >
-            <Text className="text-white text-xl">{title}</Text>
-      </Pressable>
+      onPress={onPress}
+      className="flex items-center justify-center rounded-full bg-amber-500 p-4"
+    >
+      <Text className="text-xl font-bold text-white">{title}</Text>
+    </Pressable>
   );
 }

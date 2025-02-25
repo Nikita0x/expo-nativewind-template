@@ -1,14 +1,14 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet } from 'react-native';
 
-import EditScreenInfo from "../../components/EditScreenInfo";
-import { Text, View } from "../../components/Themed";
+import EditScreenInfo from '../../components/EditScreenInfo';
+import { Text, View } from '../../components/Themed';
 
 export default function TabTwoScreen() {
   return (
     <View style={styles.container}>
       <Text
         style={styles.title}
-        className="text-purple-500 text-sm font-extrabold"
+        className="text-sm font-extrabold text-purple-500"
       >
         Created By Samuel Wyndham @ Sign365
       </Text>
@@ -25,16 +25,16 @@ export default function TabTwoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   separator: {
     marginVertical: 30,
     height: 1,
-    width: "80%",
+    width: '80%',
   },
 });
