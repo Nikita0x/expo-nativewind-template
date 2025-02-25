@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Alert } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 
 const MyCalendar = () => {
   const today = new Date().toISOString().split('T')[0];
 
-  const markedDates = {
+  // State to manage marked dates
+  const [markedDates, setMarkedDates] = useState({
     [today]: {
       customStyles: {
         container: {
@@ -16,20 +18,38 @@ const MyCalendar = () => {
         },
       },
     },
+  });
+
+  const onDayPress = (day: any) => {
+    const { dateString } = day;
+
+    if (markedDates[dateString]) {
+      Alert.alert('Date Unavailable', 'An event already exists on this date.');
+    } else {
+      const newMarkedDates = {
+        ...markedDates,
+        [dateString]: {
+          customStyles: {
+            container: {
+              backgroundColor: 'blue',
+              borderRadius: 50,
+            },
+            text: {
+              color: 'white',
+            },
+          },
+        },
+      };
+      setMarkedDates(newMarkedDates);
+    }
   };
 
   return (
     <Calendar
-      // Specify the current date
       current={today}
-      // Apply the marked dates
       markedDates={markedDates}
-      // Set the marking type to 'custom' for custom styling
       markingType={'custom'}
-      // Additional props
-      onDayPress={(day: any) => {
-        console.log('selected day', day);
-      }}
+      onDayPress={onDayPress}
       showSixWeeks={true}
     />
   );

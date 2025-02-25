@@ -1,11 +1,9 @@
-import { StyleSheet, TextInput, Pressable, ScrollView } from 'react-native';
+import { BaseButton } from '@/components/BaseButton';
+import MyCalendar from '@/components/MyCalendar';
 import { Picker } from '@react-native-picker/picker';
 import { useState } from 'react';
-import { BaseButton } from '@/components/BaseButton';
+import { ScrollView, StyleSheet, TextInput } from 'react-native';
 import { Text, View } from '../../components/Themed';
-import { useEventStore } from '@/state/events.store';
-import { Calendar, CalendarList, Agenda } from 'react-native-calendars';
-import MyCalendar from '@/components/MyCalendar';
 
 enum RepeatOptions {
   WEEKLY = 'WEEKLY',
@@ -29,20 +27,6 @@ interface Event {
   startDate: EventDate;
   endDate: EventDate;
   repeat: RepeatOptions;
-}
-
-function debounce<F extends (...args: any[]) => any>(
-  func: F,
-  delay: number
-): (...args: Parameters<F>) => void {
-  let timer: ReturnType<typeof setTimeout>;
-
-  return function (...args: Parameters<F>): void {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      func(...args);
-    }, delay);
-  };
 }
 
 const dateRegex =
@@ -239,49 +223,49 @@ export function Test() {
   const saveEvent = () => {
     // Trim whitespace from the event name
     const trimmedName = event.name.trim();
-  
+
     // Initialize an array to collect error messages
     const errors = [];
-  
+
     // Validate event name
     if (trimmedName.length === 0) {
       errors.push('Name is required.');
     }
-  
+
     // Validate start date
     if (event.startDate.date.value.trim().length === 0) {
       errors.push('Start date is required.');
     } else if (event.startDate.date.invalid) {
       errors.push('Start date is invalid.');
     }
-  
+
     // Validate start time
     if (event.startDate.time.value.trim().length === 0) {
       errors.push('Start time is required.');
     } else if (event.startDate.time.invalid) {
       errors.push('Start time is invalid.');
     }
-  
+
     // Validate end date
     if (event.endDate.date.value.trim().length === 0) {
       errors.push('End date is required.');
     } else if (event.endDate.date.invalid) {
       errors.push('End date is invalid.');
     }
-  
+
     // Validate end time
     if (event.endDate.time.value.trim().length === 0) {
       errors.push('End time is required.');
     } else if (event.endDate.time.invalid) {
       errors.push('End time is invalid.');
     }
-  
+
     // If there are any errors, log them and prevent saving
     if (errors.length > 0) {
       errors.forEach((error) => console.log(error));
       return;
     }
-  
+
     // If all validations pass, save the event and reset the state
     setEvent(initialEventState);
     console.log('Event saved successfully.');
@@ -361,7 +345,9 @@ export function Test() {
           </Picker>
         </View>
 
-        <Text className="text-black">{JSON.stringify(event, null, 2)}</Text>
+        <Text className="text-[12px] text-black">
+          {JSON.stringify(event, null, 2)}
+        </Text>
 
         <BaseButton title="SAVE" onPress={saveEvent} />
       </View>
