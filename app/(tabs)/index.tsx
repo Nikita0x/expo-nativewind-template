@@ -14,8 +14,14 @@ enum RepeatOptions {
 }
 
 interface EventDate {
-  date: string;
-  time: string;
+  date: {
+    value: string;
+    invalid: boolean;
+  };
+  time: {
+    value: string;
+    invalid: boolean;
+  };
 }
 
 interface Event {
@@ -24,6 +30,24 @@ interface Event {
   endDate: EventDate;
   repeat: RepeatOptions;
 }
+
+function debounce<F extends (...args: any[]) => any>(
+  func: F,
+  delay: number
+): (...args: Parameters<F>) => void {
+  let timer: ReturnType<typeof setTimeout>;
+
+  return function (...args: Parameters<F>): void {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+}
+
+const dateRegex =
+  /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (0[1-9]|[12][0-9]|3[01]), \d{4}$/;
+const timeRegex = /^(0?[1-9]|1[0-2]):[0-5][0-9] ?[APap][Mm]$/;
 
 export default function TabOneScreen() {
   return (
@@ -37,19 +61,41 @@ export function Test() {
   //   const {eventStore, setEventStore} = useEventStore()
   // TODO: переделать на стор zustand
 
-  const [selected, setSelected] = useState('');
-  const [event, setEvent] = useState<Event>({
+  const initialEventState: Event = {
     name: '',
     startDate: {
-      date: '',
-      time: '',
+      date: { value: '', invalid: false },
+      time: { value: '', invalid: false },
     },
     endDate: {
-      date: '',
-      time: '',
+      date: { value: '', invalid: false },
+      time: { value: '', invalid: false },
     },
     repeat: RepeatOptions.WEEKLY,
-  });
+  };
+
+  const [selected, setSelected] = useState('');
+  const [event, setEvent] = useState<Event>(initialEventState);
+
+  const inputStartDateStyles = [
+    styles.input,
+    event.startDate.date.invalid && styles.inputError,
+  ];
+
+  const inputStartTimeStyles = [
+    styles.input,
+    event.startDate.time.invalid && styles.inputError,
+  ];
+
+  const inputEndDateStyles = [
+    styles.input,
+    event.endDate.date.invalid && styles.inputError,
+  ];
+
+  const inputEndTimeStyles = [
+    styles.input,
+    event.endDate.time.invalid && styles.inputError,
+  ];
 
   const handleNameChange = (value: string) => {
     console.log('Value of input is: ', value);
@@ -60,41 +106,124 @@ export function Test() {
   };
 
   const handleStartDate = (value: string) => {
+    if (value.length === 0) {
+      setEvent((prevEvent) => ({
+        ...prevEvent,
+        startDate: {
+          ...prevEvent.startDate,
+          date: {
+            value: '',
+            invalid: false,
+          },
+        },
+      }));
+
+      return;
+    }
+
+    const trimmedValue = value.trimStart();
+    const isValid = dateRegex.test(trimmedValue);
+
     setEvent((prevEvent) => ({
       ...prevEvent,
       startDate: {
         ...prevEvent.startDate,
-        date: value.trim(),
+        date: {
+          value: trimmedValue,
+          invalid: !isValid,
+        },
+        time: prevEvent.startDate.time,
       },
     }));
   };
 
   const handleStartTime = (value: string) => {
+    if (value.length === 0) {
+      setEvent((prevEvent) => ({
+        ...prevEvent,
+        startDate: {
+          ...prevEvent.startDate,
+          time: {
+            value: '',
+            invalid: false,
+          },
+        },
+      }));
+
+      return;
+    }
+
+    const trimmedValue = value.trimStart();
+    const isValidTime = timeRegex.test(trimmedValue);
+
     setEvent((prevEvent) => ({
       ...prevEvent,
       startDate: {
         ...prevEvent.startDate,
-        time: value.trim(),
+        time: {
+          value: trimmedValue,
+          invalid: !isValidTime,
+        },
       },
     }));
   };
 
   const handleEndDate = (value: string) => {
+    if (value.length === 0) {
+      setEvent((prevEvent) => ({
+        ...prevEvent,
+        endDate: {
+          ...prevEvent.endDate,
+          date: {
+            value: '',
+            invalid: false,
+          },
+        },
+      }));
+
+      return;
+    }
+
+    const trimmedValue = value.trimStart();
+    const isValidDate = dateRegex.test(trimmedValue);
     setEvent((prevEvent) => ({
       ...prevEvent,
       endDate: {
         ...prevEvent.endDate,
-        date: value.trim(),
+        date: {
+          value: trimmedValue,
+          invalid: !isValidDate,
+        },
       },
     }));
   };
 
   const handleEndTime = (value: string) => {
+    if (value.length === 0) {
+      setEvent((prevEvent) => ({
+        ...prevEvent,
+        endDate: {
+          ...prevEvent.endDate,
+          time: {
+            value: '',
+            invalid: false,
+          },
+        },
+      }));
+
+      return;
+    }
+
+    const trimmedValue = value.trimStart();
+    const isValidTime = timeRegex.test(trimmedValue);
     setEvent((prevEvent) => ({
       ...prevEvent,
       endDate: {
         ...prevEvent.endDate,
-        time: value.trim(),
+        time: {
+          value: trimmedValue,
+          invalid: !isValidTime,
+        },
       },
     }));
   };
@@ -105,6 +234,57 @@ export function Test() {
       ...prevEvent,
       repeat: value,
     }));
+  };
+
+  const saveEvent = () => {
+    // Trim whitespace from the event name
+    const trimmedName = event.name.trim();
+  
+    // Initialize an array to collect error messages
+    const errors = [];
+  
+    // Validate event name
+    if (trimmedName.length === 0) {
+      errors.push('Name is required.');
+    }
+  
+    // Validate start date
+    if (event.startDate.date.value.trim().length === 0) {
+      errors.push('Start date is required.');
+    } else if (event.startDate.date.invalid) {
+      errors.push('Start date is invalid.');
+    }
+  
+    // Validate start time
+    if (event.startDate.time.value.trim().length === 0) {
+      errors.push('Start time is required.');
+    } else if (event.startDate.time.invalid) {
+      errors.push('Start time is invalid.');
+    }
+  
+    // Validate end date
+    if (event.endDate.date.value.trim().length === 0) {
+      errors.push('End date is required.');
+    } else if (event.endDate.date.invalid) {
+      errors.push('End date is invalid.');
+    }
+  
+    // Validate end time
+    if (event.endDate.time.value.trim().length === 0) {
+      errors.push('End time is required.');
+    } else if (event.endDate.time.invalid) {
+      errors.push('End time is invalid.');
+    }
+  
+    // If there are any errors, log them and prevent saving
+    if (errors.length > 0) {
+      errors.forEach((error) => console.log(error));
+      return;
+    }
+  
+    // If all validations pass, save the event and reset the state
+    setEvent(initialEventState);
+    console.log('Event saved successfully.');
   };
 
   return (
@@ -120,6 +300,7 @@ export function Test() {
             placeholder="Event name"
             style={{ color: 'black' }}
             placeholderTextColor="gray"
+            value={event.name}
           />
         </View>
 
@@ -130,15 +311,17 @@ export function Test() {
               onChangeText={handleStartDate}
               className="w-32 rounded-xl bg-white p-5"
               placeholder="Jan 28, 2025"
-              style={{ color: 'black' }}
+              style={inputStartDateStyles}
               placeholderTextColor="gray"
+              value={event.startDate.date.value}
             />
             <TextInput
               onChangeText={handleStartTime}
               className="w-32 rounded-xl bg-white p-5"
               placeholder="03:00 PM"
-              style={{ color: 'black' }}
+              style={inputStartTimeStyles}
               placeholderTextColor="gray"
+              value={event.startDate.time.value}
             />
           </View>
         </View>
@@ -150,15 +333,17 @@ export function Test() {
               onChangeText={handleEndDate}
               className="w-32 rounded-xl bg-white p-5"
               placeholder="Jan 28, 2025"
-              style={{ color: 'black' }}
+              style={inputEndDateStyles}
               placeholderTextColor="gray"
+              value={event.endDate.date.value}
             />
             <TextInput
               onChangeText={handleEndTime}
               className="w-32 rounded-xl bg-white p-5"
               placeholder="03:00 PM"
-              style={{ color: 'black' }}
+              style={inputEndTimeStyles}
               placeholderTextColor="gray"
+              value={event.endDate.time.value}
             />
           </View>
         </View>
@@ -176,47 +361,9 @@ export function Test() {
           </Picker>
         </View>
 
-        {/* <Text>{JSON.stringify(event, null, 2)}</Text> */}
+        <Text className="text-black">{JSON.stringify(event, null, 2)}</Text>
 
-        <BaseButton
-          title="SAVE"
-          onPress={() => {
-            console.log('saved');
-          }}
-          //  onPress={setEventStore}
-        />
-
-        <BaseButton
-          title="SAVE"
-          onPress={() => {
-            console.log('saved');
-          }}
-          //  onPress={setEventStore}
-        />
-
-        <BaseButton
-          title="SAVE"
-          onPress={() => {
-            console.log('saved');
-          }}
-          //  onPress={setEventStore}
-        />
-
-        <BaseButton
-          title="SAVE"
-          onPress={() => {
-            console.log('saved');
-          }}
-          //  onPress={setEventStore}
-        />
-
-        <BaseButton
-          title="SAVE"
-          onPress={() => {
-            console.log('saved');
-          }}
-          //  onPress={setEventStore}
-        />
+        <BaseButton title="SAVE" onPress={saveEvent} />
       </View>
     </ScrollView>
   );
@@ -231,5 +378,17 @@ const styles = StyleSheet.create({
     height: 55,
     width: '100%',
     alignSelf: 'center',
+  },
+  input: {
+    width: 128, // Equivalent to 32 * 4 (since React Native uses pixels)
+    borderRadius: 12, // Equivalent to 'rounded-xl'
+    padding: 20, // Equivalent to 'p-5'
+    backgroundColor: 'white',
+    color: 'black',
+  },
+  inputError: {
+    backgroundColor: '#fee2e2', // Equivalent to 'bg-red-100'
+    borderColor: '#b91c1c', // Equivalent to 'border-red-700'
+    borderWidth: 1,
   },
 });
